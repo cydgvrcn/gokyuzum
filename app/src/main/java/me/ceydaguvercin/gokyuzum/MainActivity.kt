@@ -29,18 +29,24 @@ class MainActivity : ComponentActivity() {
         ).build()
         
         val repository = CityRepository(db.cityDao())
+        val weatherRepository = me.ceydaguvercin.gokyuzum.data.repository.WeatherRepository()
         
         val viewModel: CityViewModel by viewModels {
             CityViewModel.Factory(repository)
         }
 
+        val weatherViewModel: me.ceydaguvercin.gokyuzum.ui.weather.WeatherViewModel by viewModels {
+            me.ceydaguvercin.gokyuzum.ui.weather.WeatherViewModel.Factory(weatherRepository, repository)
+        }
+
         setContent {
             GokyuzumTheme {
+                // Temadan gelen 'arka plan' rengini kullanan bir yüzey kapsayıcısı
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CityListScreen(viewModel = viewModel)
+                    CityListScreen(viewModel = viewModel, weatherViewModel = weatherViewModel)
                 }
             }
         }

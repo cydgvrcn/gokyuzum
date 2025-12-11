@@ -20,14 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import me.ceydaguvercin.gokyuzum.data.local.CityEntity
+import me.ceydaguvercin.gokyuzum.ui.weather.WeatherCard
+import me.ceydaguvercin.gokyuzum.ui.weather.WeatherViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityListScreen(
     viewModel: CityViewModel,
+    weatherViewModel: me.ceydaguvercin.gokyuzum.ui.weather.WeatherViewModel, // Tam yol veya import eklenebilir
     modifier: Modifier = Modifier
 ) {
+    // ViewModel üzerinden gelen şehir listesini dinliyoruz (StateFlow -> State)
     val cities by viewModel.cities.collectAsState()
+    val weatherUiState by weatherViewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -46,19 +51,25 @@ fun CityListScreen(
             }
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        Column(modifier = modifier.padding(innerPadding)) {
+            me.ceydaguvercin.gokyuzum.ui.weather.WeatherCard(
+                uiState = weatherUiState
+            )
+            
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
             items(cities) { city ->
                 CityItem(
                     city = city,
                     onSetDefault = { viewModel.setDefaultCity(city) },
                     onDelete = { viewModel.deleteCity(city) }
                 )
+            }
+        }
+
             }
         }
 
@@ -72,7 +83,6 @@ fun CityListScreen(
             )
         }
     }
-}
 
 @Composable
 fun CityItem(
