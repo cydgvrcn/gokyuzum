@@ -7,14 +7,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import me.ceydaguvercin.gokyuzum.data.network.CurrentWeather
+import me.ceydaguvercin.gokyuzum.data.network.Current
 import me.ceydaguvercin.gokyuzum.data.repository.CityRepository
 import me.ceydaguvercin.gokyuzum.data.repository.WeatherRepository
 
 data class WeatherUiState(
     val cityName: String? = null,
-    val weather: CurrentWeather? = null,
+    val weather: Current? = null,
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -33,16 +34,21 @@ class WeatherViewModel(
 
     private fun observeDefaultCity() {
         viewModelScope.launch {
-            cityRepository.allCities.collectLatest { cities ->
-                val defaultCity = cities.find { it.isDefault }
+            combine(
+                cityRepository.allCities,
+                cityRepository.defaultCityIdFlow
+            ) { cities, defaultId ->
+                cities.find { it.id == defaultId }
+            }.collectLatest { defaultCity ->
                 if (defaultCity != null) {
                     // Varsayılan şehir değişti veya ilk kez yüklendi
                     if (_uiState.value.cityName != defaultCity.name) {
                         fetchWeather(defaultCity.name)
                     }
                 } else {
-                    // Hiç şehir yok veya varsayılan yok
-                    _uiState.value = WeatherUiState(error = "Varsayılan şehir seçili değil")
+                    // Hiç şehir yok veya varsayılan yok 
+                    // (veya silinmiş bir ID kaldıysa)
+                     _uiState.value = WeatherUiState(error = "Varsayılan şehir seçili değil")
                 }
             }
         }

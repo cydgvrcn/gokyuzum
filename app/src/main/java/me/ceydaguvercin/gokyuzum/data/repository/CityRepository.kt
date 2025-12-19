@@ -4,17 +4,22 @@
 
 package me.ceydaguvercin.gokyuzum.data.repository
 
+import android.content.SharedPreferences
 import kotlinx.coroutines.flow.Flow
 import me.ceydaguvercin.gokyuzum.data.local.CityDao
 import me.ceydaguvercin.gokyuzum.data.local.CityEntity
 
-class CityRepository(private val cityDao: CityDao) {
+class CityRepository(
+    private val cityDao: CityDao,
+    private val sharedPreferences: SharedPreferences
+) {
     val allCities: Flow<List<CityEntity>> = cityDao.getAllCities()
 
+    private val _defaultCityIdFlow = kotlinx.coroutines.flow.MutableStateFlow(getDefaultCityId())
+    val defaultCityIdFlow: kotlinx.coroutines.flow.StateFlow<Int> = _defaultCityIdFlow
+
     suspend fun addCity(name: String) {
-        // ileride eklenen ilk şehir otomatik varsayılan olarak tanımlanabilir,
-        // ancak şimdilik, sadece bir varsayılan olabilir ve bu manuel seçilebilir.
-        val city = CityEntity(name = name, isDefault = false)
+        val city = CityEntity(name = name)
         cityDao.insertCity(city)
     }
 
@@ -22,7 +27,12 @@ class CityRepository(private val cityDao: CityDao) {
         cityDao.deleteCity(city)
     }
 
-    suspend fun setDefaultCity(city: CityEntity) {
-        cityDao.setDefaultCity(city.id)
+    fun setDefaultCity(cityId: Int) {
+        sharedPreferences.edit().putInt("default_city_id", cityId).apply()
+        _defaultCityIdFlow.value = cityId
+    }
+
+    fun getDefaultCityId(): Int {
+        return sharedPreferences.getInt("default_city_id", -1)
     }
 }

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CityDao {
-    @Query("SELECT * FROM cities ORDER BY isDefault DESC, name ASC")
+    @Query("SELECT * FROM cities ORDER BY name ASC")
     fun getAllCities(): Flow<List<CityEntity>>
 
     @Insert
@@ -19,16 +19,4 @@ interface CityDao {
 
     @Delete
     suspend fun deleteCity(city: CityEntity)
-
-    @Query("UPDATE cities SET isDefault = 0")
-    suspend fun clearDefaults()
-
-    @Query("UPDATE cities SET isDefault = 1 WHERE id = :cityId")
-    suspend fun setCityDefault(cityId: Int)
-
-    @Transaction
-    suspend fun setDefaultCity(cityId: Int) {
-        clearDefaults()
-        setCityDefault(cityId)
-    }
 }

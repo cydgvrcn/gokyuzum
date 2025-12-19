@@ -22,6 +22,8 @@ class CityViewModel(private val repository: CityRepository) : ViewModel() {
             initialValue = emptyList()
         )
 
+    val defaultCityId = repository.defaultCityIdFlow
+
     fun addCity(name: String) {
         viewModelScope.launch {
             repository.addCity(name)
@@ -35,9 +37,7 @@ class CityViewModel(private val repository: CityRepository) : ViewModel() {
     }
 
     fun setDefaultCity(city: CityEntity) {
-        viewModelScope.launch {
-            repository.setDefaultCity(city)
-        }
+        repository.setDefaultCity(city.id)
     }
 
 

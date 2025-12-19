@@ -32,6 +32,7 @@ fun CityListScreen(
 ) {
     // ViewModel üzerinden gelen şehir listesini dinliyoruz (StateFlow -> State)
     val cities by viewModel.cities.collectAsState()
+    val defaultCityId by viewModel.defaultCityId.collectAsState()
     val weatherUiState by weatherViewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
@@ -64,6 +65,7 @@ fun CityListScreen(
             items(cities) { city ->
                 CityItem(
                     city = city,
+                    isDefault = city.id == defaultCityId,
                     onSetDefault = { viewModel.setDefaultCity(city) },
                     onDelete = { viewModel.deleteCity(city) }
                 )
@@ -87,6 +89,7 @@ fun CityListScreen(
 @Composable
 fun CityItem(
     city: CityEntity,
+    isDefault: Boolean,
     onSetDefault: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -111,9 +114,9 @@ fun CityItem(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onSetDefault) {
                     Icon(
-                        imageVector = if (city.isDefault) Icons.Filled.Star else Icons.Outlined.Star,
+                        imageVector = if (isDefault) Icons.Filled.Star else Icons.Outlined.Star,
                         contentDescription = "Varsayılan Yap",
-                        tint = if (city.isDefault) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (isDefault) Color(0xFFFFD700) else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 

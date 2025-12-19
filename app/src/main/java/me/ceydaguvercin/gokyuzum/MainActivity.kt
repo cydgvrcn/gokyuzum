@@ -26,10 +26,13 @@ class MainActivity : ComponentActivity() {
         val db = Room.databaseBuilder(
             applicationContext,
             CityDatabase::class.java, "city-database"
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
         
-        val repository = CityRepository(db.cityDao())
-        val weatherRepository = me.ceydaguvercin.gokyuzum.data.repository.WeatherRepository()
+        val sharedPrefs = getSharedPreferences("weather_prefs", android.content.Context.MODE_PRIVATE)
+        val repository = CityRepository(db.cityDao(), sharedPrefs)
+        val weatherRepository = me.ceydaguvercin.gokyuzum.data.repository.WeatherRepository(db.weatherDao(), sharedPrefs)
         
         val viewModel: CityViewModel by viewModels {
             CityViewModel.Factory(repository)
